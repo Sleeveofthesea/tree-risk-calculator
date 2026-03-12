@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f1214">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TRAQ">
+<title>TRAQ Risk Calculator</title>
+
+<style>
+  :root {
+    --bg: #0f1214;
+    --surface: #181c1f;
+    --border: #2a3038;
+    --text: #c8d4dc;
+    --muted: #5a6872;
+    --accent: #3a8c6e;
+    --low-glow: #3ddc8c;
+    --moderate-glow: #f5b830;
+    --high-glow: #ff6030;
+    --extreme-glow: #ff2244;
+    --radius: 7px;
+    --font-ui:   'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
+    --font-mono: 'Roboto Mono', 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; height: 100dvh; overflow: hidden; }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-ui);
+    display: flex; flex-direction: column;
+    max-width: 430px; margin: 0 auto;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+
+  /* ── Result bar ── */
+  #result {
+    flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; height: 56px; gap: 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  #result-label {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+  }
+  #result-rating {
+    font-size: 38px; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 0.04em; line-height: 1;
+    color: var(--muted); transition: color 0.3s, text-shadow 0.3s;
+  }
+  #result.rating-low      { background: #0c1a12; border-color: var(--low-glow); }
+  #result.rating-moderate { background: #1a1306; border-color: var(--moderate-glow); }
+  #result.rating-high     { background: #1a0c06; border-color: var(--high-glow); }
+  #result.rating-extreme  { background: #160610; border-color: var(--extreme-glow); }
+  #result.rating-low      #result-rating { color: var(--low-glow);      text-shadow: 0 0 20px rgba(61,220,140,0.45); }
+  #result.rating-moderate #result-rating { color: var(--moderate-glow); text-shadow: 0 0 20px rgba(245,184,48,0.45); }
+  #result.rating-high     #result-rating { color: var(--high-glow);     text-shadow: 0 0 20px rgba(255,96,48,0.45); }
+  #result.rating-extreme  #result-rating { color: var(--extreme-glow);  text-shadow: 0 0 20px rgba(255,34,68,0.5); animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%,100% { text-shadow: 0 0 20px rgba(255,34,68,0.5); }
+    50%      { text-shadow: 0 0 50px rgba(255,34,68,1); }
+  }
+
+  /* ── Main ── */
+  main {
+    flex: 1; display: flex; flex-direction: column;
+    gap: 7px; padding: 9px 10px; overflow: hidden;
+  }
+  .section { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+  .section-label {
+    font-family: var(--font-ui); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text); padding-left: 2px; text-align: center;
+  }
+
+  /* ── Buttons ── */
+  .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .btn {
+    height: 52px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius); color: var(--text);
+    font-family: var(--font-ui); font-size: 16px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+    user-select: none; -webkit-user-select: none;
+    position: relative; overflow: hidden;
+  }
+
+  /* Long-press fill sweep */
+  .btn-fill {
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0.07);
+    transform: scaleX(0); transform-origin: left;
+    pointer-events: none;
+  }
+  .btn.pressing .btn-fill {
+    transform: scaleX(1);
+    transition: transform 0.5s linear;
+  }
+
+  .btn.selected {
+    color: #fff;
+    background: var(--sel-bg); border-color: var(--sel-border);
+    box-shadow: 0 0 0 1px var(--sel-border) inset;
+  }
+  .sel-dot {
+    display: none;
+    position: absolute; top: 5px; right: 5px;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--sel-border);
+  }
+  .btn.selected .sel-dot { display: block; }
+
+  .btn.loit-disabled {
+    opacity: 0.22; pointer-events: none; border-style: dashed;
+  }
+
+  /* ── Occupancy row ── */
+  .occ-group {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+  }
+  .occ-btn {
+    height: 36px; font-size: 12px; letter-spacing: 0.02em;
+  }
+  .occ-btn.selected {
+    color: var(--text);
+    background: #252d33;
+    border-color: #4a5a66;
+    box-shadow: 0 0 0 1px #4a5a66 inset;
+  }
+  .occ-btn .sel-dot { background: #4a5a66; }
+
+  body                 { --sel-bg: #1a2b22; --sel-border: #3a8c6e; }
+  body.rating-low      { --sel-bg: #0f2219; --sel-border: var(--low-glow); }
+  body.rating-moderate { --sel-bg: #231a05; --sel-border: var(--moderate-glow); }
+  body.rating-high     { --sel-bg: #251008; --sel-border: var(--high-glow); }
+  body.rating-extreme  { --sel-bg: #200812; --sel-border: var(--extreme-glow); }
+
+  .divider { height: 1px; background: var(--border); flex-shrink: 0; }
+
+  /* ── Result bar long-press cue ── */
+  #result { cursor: pointer; user-select: none; -webkit-user-select: none; }
+  #result.pressing { opacity: 0.7; }
+
+  /* ── Matrix overlay ── */
+  #matrix-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; flex-direction: column;
+    background: var(--bg);
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    max-width: 430px; margin: 0 auto;
+  }
+  #matrix-overlay.open { transform: translateY(0); }
+
+  #matrix-header {
+    flex-shrink: 0; display: flex; align-items: center;
+    padding: 0 16px; height: 56px; gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  #matrix-header-title {
+    flex: 1; font-family: var(--font-ui); font-size: 13px;
+    font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  #matrix-close {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+    background: var(--border); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text); font-size: 18px; font-family: sans-serif;
+  }
+
+  #matrix-body {
+    flex: 1; overflow-y: auto;
+    padding: 16px 12px 32px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+
+  .matrix-title {
+    font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px; text-align: center;
+  }
+
+  .mtx { display: grid; gap: 3px; width: 100%; }
+  .mtx-1 { grid-template-columns: minmax(72px,1.4fr) repeat(4, 1fr); }
+  .mtx-2 { grid-template-columns: minmax(88px,1.6fr) repeat(4, 1fr); }
+
+  .mc {
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 5px 3px;
+    border-radius: 4px; font-size: 10px; line-height: 1.25;
+    font-weight: 600; font-family: var(--font-ui);
+    letter-spacing: 0.02em;
+  }
+  .mc-hdr {
+    background: #1e252a; color: var(--muted);
+    font-size: 9px; letter-spacing: 0.05em; text-transform: uppercase;
+    font-family: var(--font-ui);
+  }
+  .mc-row {
+    background: #1a2028; color: var(--text);
+    justify-content: flex-start; padding-left: 7px;
+    font-size: 10px; text-transform: uppercase;
+  }
+  .mc-data {
+    background: var(--surface); color: var(--muted);
+    border: 1px solid var(--border);
+    text-transform: uppercase; font-size: 9px;
+  }
+  .mc-low      { background: #0c1f14; color: var(--low-glow);      border-color: #1a4028; }
+  .mc-moderate { background: #1f1805; color: var(--moderate-glow); border-color: #3d3010; }
+  .mc-high     { background: #1f0e05; color: var(--high-glow);     border-color: #3d2010; }
+  .mc-extreme  { background: #1f0610; color: var(--extreme-glow);  border-color: #3d1020; }
+  .mc-vl  { background: #0d1f17; color: #5de8b0; border-color: #1a4030; }
+  .mc-l   { background: #161d08; color: #b8d45a; border-color: #2a3a10; }
+  .mc-sl  { background: #1d1808; color: #d4a840; border-color: #3a2e10; }
+  .mc-unl { background: #1a2028; color: var(--muted); border-color: var(--border); }
+  .mc-active {
+    outline: 2px solid #fff; outline-offset: -2px;
+    color: #fff !important; filter: brightness(1.35);
+  }
+  .mc-path { filter: brightness(1.25); }
+  .mc-dim  { opacity: 0.18; }
+
+  /* ── Detail overlay ── */
+  #detail-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; flex-direction: column;
+    background: var(--bg);
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    max-width: 430px; margin: 0 auto;
+  }
+  #detail-overlay.open { transform: translateY(0); }
+
+  #detail-header {
+    flex-shrink: 0; display: flex; align-items: center;
+    padding: 0 16px; height: 56px; gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  #detail-left { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+  #detail-category {
+    font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+  }
+  #detail-title {
+    font-size: 22px; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 0.04em; color: #fff;
+  }
+  #detail-close {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+    background: var(--border); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text); font-size: 18px; font-family: sans-serif;
+  }
+
+  #detail-body {
+    flex: 1; overflow-y: auto;
+    padding: 20px 16px 32px;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+  .detail-section-title {
+    font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  #detail-definition { font-size: 17px; line-height: 1.55; color: var(--text); }
+  #detail-examples { display: flex; flex-direction: column; gap: 8px; }
+  .example-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .example-bullet {
+    flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); margin-top: 6px;
+  }
+  .example-text { font-size: 15px; line-height: 1.45; color: var(--text); }
+</style>
+</head>
+<body>
+
+<div id="result">
+  <div id="result-label">Risk Rating</div>
+  <div id="result-rating">—</div>
+</div>
+
+<main>
+
+  <div class="section">
+    <div class="section-label">Likelihood of Failure</div>
+    <div class="btn-group">
+      <button class="btn" data-group="lof" data-value="Imminent"><div class="btn-fill"></div><span class="sel-dot"></span>Imminent</button>
+      <button class="btn" data-group="lof" data-value="Possible"><div class="btn-fill"></div><span class="sel-dot"></span>Possible</button>
+      <button class="btn" data-group="lof" data-value="Probable"><div class="btn-fill"></div><span class="sel-dot"></span>Probable</button>
+      <button class="btn" data-group="lof" data-value="Improbable"><div class="btn-fill"></div><span class="sel-dot"></span>Improbable</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-label">Occupancy Rate</div>
+    <div class="occ-group">
+      <button class="btn occ-btn" data-group="occ" data-occ-idx="3" data-value="Constant"><div class="btn-fill"></div><span class="sel-dot"></span>Constant</button>
+      <button class="btn occ-btn" data-group="occ" data-occ-idx="2" data-value="Frequent"><div class="btn-fill"></div><span class="sel-dot"></span>Frequent</button>
+      <button class="btn occ-btn" data-group="occ" data-occ-idx="1" data-value="Occasional"><div class="btn-fill"></div><span class="sel-dot"></span>Occasional</button>
+      <button class="btn occ-btn" data-group="occ" data-occ-idx="0" data-value="Rare"><div class="btn-fill"></div><span class="sel-dot"></span>Rare</button>
+    </div>
+    <div class="section-label" style="margin-top:4px">Likelihood of Impacting Target</div>
+    <div class="btn-group">
+      <button class="btn loit-disabled" data-group="loit" data-value="High"><div class="btn-fill"></div><span class="sel-dot"></span>High</button>
+      <button class="btn"               data-group="loit" data-value="Low"><div class="btn-fill"></div><span class="sel-dot"></span>Low</button>
+      <button class="btn loit-disabled" data-group="loit" data-value="Medium"><div class="btn-fill"></div><span class="sel-dot"></span>Medium</button>
+      <button class="btn"               data-group="loit" data-value="Very low"><div class="btn-fill"></div><span class="sel-dot"></span>Very Low</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-label">Consequences of Failure</div>
+    <div class="btn-group">
+      <button class="btn" data-group="cof" data-value="Severe"><div class="btn-fill"></div><span class="sel-dot"></span>Severe</button>
+      <button class="btn" data-group="cof" data-value="Minor"><div class="btn-fill"></div><span class="sel-dot"></span>Minor</button>
+      <button class="btn" data-group="cof" data-value="Significant"><div class="btn-fill"></div><span class="sel-dot"></span>Significant</button>
+      <button class="btn" data-group="cof" data-value="Negligible"><div class="btn-fill"></div><span class="sel-dot"></span>Negligible</button>
+    </div>
+  </div>
+
+  <div style="text-align:center; padding: 6px 16px 2px; font-family: var(--font-ui); font-size: 8.5px; color: var(--muted); letter-spacing: 0.01em; white-space: nowrap;">
+    Based on <em>Best Management Practices — Tree Risk Assessment</em>, 3rd Ed. (ISA, 2025)
+  </div>
+
+</main>
+
+<div id="detail-overlay">
+  <div id="detail-header">
+    <div id="detail-left">
+      <div id="detail-category"></div>
+      <div id="detail-title"></div>
+    </div>
+    <button id="detail-close">✕</button>
+  </div>
+  <div id="detail-body">
+    <div>
+      <div class="detail-section-title">Definition</div>
+      <div id="detail-definition"></div>
+    </div>
+    <div>
+      <div class="detail-section-title">Examples</div>
+      <div id="detail-examples"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Matrix overlay ── -->
+<div id="matrix-overlay">
+  <div id="matrix-header">
+    <div id="matrix-header-title">Risk Matrices</div>
+    <button id="matrix-close">&#x2715;</button>
+  </div>
+  <div id="matrix-body">
+
+    <!-- Matrix 1: LOF x LOIT → Likelihood F&I -->
+    <div>
+      <div class="matrix-title">Matrix 1 — Likelihood of Failure &amp; Impact</div>
+      <div class="mtx mtx-1" id="mtx1">
+        <!-- Row 0: header -->
+        <div class="mc mc-hdr">LOF \ LOIT</div>
+        <div class="mc mc-hdr" data-m1col="Very low">Very Low</div>
+        <div class="mc mc-hdr" data-m1col="Low">Low</div>
+        <div class="mc mc-hdr" data-m1col="Medium">Medium</div>
+        <div class="mc mc-hdr" data-m1col="High">High</div>
+        <!-- Row 1: Imminent -->
+        <div class="mc mc-row" data-m1row="Imminent">Imminent</div>
+        <div class="mc mc-data mc-unl" data-m1row="Imminent" data-m1col="Very low">Unlikely</div>
+        <div class="mc mc-data mc-sl"  data-m1row="Imminent" data-m1col="Low">Somewhat Likely</div>
+        <div class="mc mc-data mc-l"   data-m1row="Imminent" data-m1col="Medium">Likely</div>
+        <div class="mc mc-data mc-vl"  data-m1row="Imminent" data-m1col="High">Very Likely</div>
+        <!-- Row 2: Probable -->
+        <div class="mc mc-row" data-m1row="Probable">Probable</div>
+        <div class="mc mc-data mc-unl" data-m1row="Probable" data-m1col="Very low">Unlikely</div>
+        <div class="mc mc-data mc-unl" data-m1row="Probable" data-m1col="Low">Unlikely</div>
+        <div class="mc mc-data mc-sl"  data-m1row="Probable" data-m1col="Medium">Somewhat Likely</div>
+        <div class="mc mc-data mc-l"   data-m1row="Probable" data-m1col="High">Likely</div>
+        <!-- Row 3: Possible -->
+        <div class="mc mc-row" data-m1row="Possible">Possible</div>
+        <div class="mc mc-data mc-unl" data-m1row="Possible" data-m1col="Very low">Unlikely</div>
+        <div class="mc mc-data mc-unl" data-m1row="Possible" data-m1col="Low">Unlikely</div>
+        <div class="mc mc-data mc-unl" data-m1row="Possible" data-m1col="Medium">Unlikely</div>
+        <div class="mc mc-data mc-sl"  data-m1row="Possible" data-m1col="High">Somewhat Likely</div>
+        <!-- Row 4: Improbable -->
+        <div class="mc mc-row" data-m1row="Improbable">Improbable</div>
+        <div class="mc mc-data mc-unl" data-m1row="Improbable" data-m1col="Very low">Unlikely</div>
+        <div class="mc mc-data mc-unl" data-m1row="Improbable" data-m1col="Low">Unlikely</div>
+        <div class="mc mc-data mc-unl" data-m1row="Improbable" data-m1col="Medium">Unlikely</div>
+        <div class="mc mc-data mc-unl" data-m1row="Improbable" data-m1col="High">Unlikely</div>
+      </div>
+    </div>
+
+    <!-- Matrix 2: Likelihood F&I x COF → Risk Rating -->
+    <div>
+      <div class="matrix-title">Matrix 2 — Risk Rating</div>
+      <div class="mtx mtx-2" id="mtx2">
+        <!-- Row 0: header -->
+        <div class="mc mc-hdr">LF&amp;I \ COF</div>
+        <div class="mc mc-hdr" data-m2col="Negligible">Negligible</div>
+        <div class="mc mc-hdr" data-m2col="Minor">Minor</div>
+        <div class="mc mc-hdr" data-m2col="Significant">Significant</div>
+        <div class="mc mc-hdr" data-m2col="Severe">Severe</div>
+        <!-- Row 1: Very likely -->
+        <div class="mc mc-row" data-m2row="Very likely">Very Likely</div>
+        <div class="mc mc-data mc-low"      data-m2row="Very likely" data-m2col="Negligible">Low</div>
+        <div class="mc mc-data mc-moderate" data-m2row="Very likely" data-m2col="Minor">Moderate</div>
+        <div class="mc mc-data mc-high"     data-m2row="Very likely" data-m2col="Significant">High</div>
+        <div class="mc mc-data mc-extreme"  data-m2row="Very likely" data-m2col="Severe">Extreme</div>
+        <!-- Row 2: Likely -->
+        <div class="mc mc-row" data-m2row="Likely">Likely</div>
+        <div class="mc mc-data mc-low"      data-m2row="Likely" data-m2col="Negligible">Low</div>
+        <div class="mc mc-data mc-moderate" data-m2row="Likely" data-m2col="Minor">Moderate</div>
+        <div class="mc mc-data mc-high"     data-m2row="Likely" data-m2col="Significant">High</div>
+        <div class="mc mc-data mc-high"     data-m2row="Likely" data-m2col="Severe">High</div>
+        <!-- Row 3: Somewhat likely -->
+        <div class="mc mc-row" data-m2row="Somewhat likely">Somewhat Likely</div>
+        <div class="mc mc-data mc-low"      data-m2row="Somewhat likely" data-m2col="Negligible">Low</div>
+        <div class="mc mc-data mc-low"      data-m2row="Somewhat likely" data-m2col="Minor">Low</div>
+        <div class="mc mc-data mc-moderate" data-m2row="Somewhat likely" data-m2col="Significant">Moderate</div>
+        <div class="mc mc-data mc-moderate" data-m2row="Somewhat likely" data-m2col="Severe">Moderate</div>
+        <!-- Row 4: Unlikely -->
+        <div class="mc mc-row" data-m2row="Unlikely">Unlikely</div>
+        <div class="mc mc-data mc-low" data-m2row="Unlikely" data-m2col="Negligible">Low</div>
+        <div class="mc mc-data mc-low" data-m2row="Unlikely" data-m2col="Minor">Low</div>
+        <div class="mc mc-data mc-low" data-m2row="Unlikely" data-m2col="Significant">Low</div>
+        <div class="mc mc-data mc-low" data-m2row="Unlikely" data-m2col="Severe">Low</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  var matrix1 = {
+    'Imminent':   { 'Very low': 'Unlikely', 'Low': 'Somewhat likely', 'Medium': 'Likely',          'High': 'Very likely' },
+    'Probable':   { 'Very low': 'Unlikely', 'Low': 'Unlikely',        'Medium': 'Somewhat likely', 'High': 'Likely' },
+    'Possible':   { 'Very low': 'Unlikely', 'Low': 'Unlikely',        'Medium': 'Unlikely',        'High': 'Somewhat likely' },
+    'Improbable': { 'Very low': 'Unlikely', 'Low': 'Unlikely',        'Medium': 'Unlikely',        'High': 'Unlikely' }
+  };
+  var matrix2 = {
+    'Very likely':     { 'Negligible': 'Low', 'Minor': 'Moderate', 'Significant': 'High',     'Severe': 'Extreme' },
+    'Likely':          { 'Negligible': 'Low', 'Minor': 'Moderate', 'Significant': 'High',     'Severe': 'High' },
+    'Somewhat likely': { 'Negligible': 'Low', 'Minor': 'Low',      'Significant': 'Moderate', 'Severe': 'Moderate' },
+    'Unlikely':        { 'Negligible': 'Low', 'Minor': 'Low',      'Significant': 'Low',      'Severe': 'Low' }
+  };
+
+  var occData = [
+    { allowed: ['Very low'] },
+    { allowed: ['Very low', 'Low'] },
+    { allowed: ['Very low', 'Low', 'Medium'] },
+    { allowed: ['Very low', 'Low', 'Medium', 'High'] }
+  ];
+
+  var detailContent = {
+    'occ|Constant':    { category: 'Occupancy Rate',                 definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'occ|Frequent':    { category: 'Occupancy Rate',                 definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'occ|Occasional':  { category: 'Occupancy Rate',                 definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'occ|Rare':        { category: 'Occupancy Rate',                 definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'lof|Imminent':    { category: 'Likelihood of Failure',          definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'lof|Probable':    { category: 'Likelihood of Failure',          definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'lof|Possible':    { category: 'Likelihood of Failure',          definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'lof|Improbable':  { category: 'Likelihood of Failure',          definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'loit|High':       { category: 'Likelihood of Impacting Target', definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'loit|Medium':     { category: 'Likelihood of Impacting Target', definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'loit|Low':        { category: 'Likelihood of Impacting Target', definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'loit|Very low':   { category: 'Likelihood of Impacting Target', definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'cof|Severe':      { category: 'Consequences of Failure',        definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'cof|Significant': { category: 'Consequences of Failure',        definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'cof|Minor':       { category: 'Consequences of Failure',        definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
+    'cof|Negligible':  { category: 'Consequences of Failure',        definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] }
+  };
+
+  var state = { lof: null, loit: null, cof: null };
+  var pressTimer = null;
+  var longPressed = false;
+
+  function wireBtn(btn) {
+    btn.addEventListener('touchstart', function(e) { startPress(btn); }, { passive: true });
+    btn.addEventListener('touchend',   function(e) { endPress(btn); },   { passive: true });
+    btn.addEventListener('touchmove',  function(e) { cancelPress(btn); },{ passive: true });
+    btn.addEventListener('mousedown',  function(e) { startPress(btn); });
+    btn.addEventListener('mouseup',    function(e) { endPress(btn); });
+    btn.addEventListener('mouseleave', function(e) { cancelPress(btn); });
+  }
+
+  function startPress(btn) {
+    if (btn.classList.contains('loit-disabled')) return;
+    longPressed = false;
+    btn.classList.add('pressing');
+    pressTimer = setTimeout(function() {
+      longPressed = true;
+      btn.classList.remove('pressing');
+      try { if (navigator.vibrate) navigator.vibrate(30); } catch(e) {}
+      openDetail(btn.dataset.group, btn.dataset.value);
+    }, 500);
+  }
+
+  function endPress(btn) {
+    clearTimeout(pressTimer);
+    btn.classList.remove('pressing');
+    if (!longPressed) pickBtn(btn);
+  }
+
+  function cancelPress(btn) {
+    clearTimeout(pressTimer);
+    btn.classList.remove('pressing');
+  }
+
+  function pickBtn(btn) {
+    if (btn.classList.contains('loit-disabled')) return;
+    var group = btn.dataset.group;
+    if (group === 'occ') {
+      document.querySelectorAll('[data-group="occ"]').forEach(function(b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      applyOccupancy(parseInt(btn.dataset.occIdx, 10));
+      return;
+    }
+    document.querySelectorAll('[data-group="' + group + '"]').forEach(function(b) { b.classList.remove('selected'); });
+    btn.classList.add('selected');
+    state[group] = btn.dataset.value;
+    calculate();
+  }
+
+  function applyOccupancy(idx) {
+    var allowed = occData[idx].allowed;
+    document.querySelectorAll('[data-group="loit"]').forEach(function(btn) {
+      var ok = allowed.indexOf(btn.dataset.value) !== -1;
+      btn.classList.toggle('loit-disabled', !ok);
+      if (!ok && btn.classList.contains('selected')) {
+        btn.classList.remove('selected');
+        state.loit = null;
+      }
+    });
+    calculate();
+  }
+
+  function calculate() {
+    if (!state.lof || !state.loit || !state.cof) { showPending(); return; }
+    var lofi   = matrix1[state.lof][state.loit];
+    var rating = matrix2[lofi][state.cof];
+    showResult(rating);
+  }
+
+  function showPending() {
+    document.getElementById('result').className = '';
+    document.getElementById('result-rating').textContent = '—';
+    document.body.className = '';
+  }
+
+  function showResult(rating) {
+    var cls = 'rating-' + rating.toLowerCase();
+    document.getElementById('result').className = cls;
+    document.getElementById('result-rating').textContent = rating;
+    document.body.className = cls;
+  }
+
+  function openDetail(group, value) {
+    var content = detailContent[group + '|' + value];
+    if (!content) return;
+    document.getElementById('detail-category').textContent   = content.category;
+    document.getElementById('detail-title').textContent      = value;
+    document.getElementById('detail-definition').textContent = content.definition;
+    var exEl = document.getElementById('detail-examples');
+    exEl.innerHTML = '';
+    for (var i = 0; i < content.examples.length; i++) {
+      var item   = document.createElement('div'); item.className = 'example-item';
+      var bullet = document.createElement('div'); bullet.className = 'example-bullet';
+      var text   = document.createElement('div'); text.className = 'example-text';
+      text.textContent = content.examples[i];
+      item.appendChild(bullet); item.appendChild(text);
+      exEl.appendChild(item);
+    }
+    document.getElementById('detail-body').scrollTop = 0;
+    document.getElementById('detail-overlay').classList.add('open');
+  }
+
+  function closeDetail() {
+    document.getElementById('detail-overlay').classList.remove('open');
+  }
+
+  document.getElementById('detail-close').addEventListener('click', closeDetail);
+
+  var swipeY = 0;
+  document.getElementById('detail-overlay').addEventListener('touchstart', function(e) {
+    swipeY = e.touches[0].clientY;
+  }, { passive: true });
+  document.getElementById('detail-overlay').addEventListener('touchend', function(e) {
+    if (e.changedTouches[0].clientY - swipeY > 80) closeDetail();
+  }, { passive: true });
+
+  // Wire all buttons
+  var btns = document.querySelectorAll('.btn');
+  for (var i = 0; i < btns.length; i++) { wireBtn(btns[i]); }
+
+  // Init occupancy to Occasional
+  applyOccupancy(1);
+
+  // ── Matrix overlay ──
+  var resultEl = document.getElementById('result');
+  var matrixOverlay = document.getElementById('matrix-overlay');
+  var resultPressTimer = null;
+  var resultLongPressed = false;
+
+  function startResultPress() {
+    resultLongPressed = false;
+    resultEl.classList.add('pressing');
+    resultPressTimer = setTimeout(function() {
+      resultLongPressed = true;
+      resultEl.classList.remove('pressing');
+      try { if (navigator.vibrate) navigator.vibrate(30); } catch(e) {}
+      openMatrix();
+    }, 500);
+  }
+  function endResultPress() {
+    clearTimeout(resultPressTimer);
+    resultEl.classList.remove('pressing');
+  }
+
+  resultEl.addEventListener('touchstart', startResultPress, { passive: true });
+  resultEl.addEventListener('touchend',   endResultPress,   { passive: true });
+  resultEl.addEventListener('touchmove',  endResultPress,   { passive: true });
+  resultEl.addEventListener('mousedown',  startResultPress);
+  resultEl.addEventListener('mouseup',    endResultPress);
+  resultEl.addEventListener('mouseleave', endResultPress);
+
+  document.getElementById('matrix-close').addEventListener('click', closeMatrix);
+
+  var matrixSwipeY = 0;
+  matrixOverlay.addEventListener('touchstart', function(e) {
+    matrixSwipeY = e.touches[0].clientY;
+  }, { passive: true });
+  matrixOverlay.addEventListener('touchend', function(e) {
+    if (e.changedTouches[0].clientY - matrixSwipeY > 80) closeMatrix();
+  }, { passive: true });
+
+  function openMatrix() {
+    highlightMatrix();
+    matrixOverlay.classList.add('open');
+  }
+
+  function closeMatrix() {
+    matrixOverlay.classList.remove('open');
+  }
+
+  function highlightMatrix() {
+    var lof  = state.lof;
+    var loit = state.loit;
+    var cof  = state.cof;
+
+    // Compute intermediate value if possible
+    var lofi = (lof && loit) ? matrix1[lof][loit] : null;
+
+    var anyActive = lof || loit || cof;
+
+    // ── Matrix 1 ──
+    var m1cells = document.querySelectorAll('#mtx1 [data-m1row], #mtx1 [data-m1col]');
+    for (var i = 0; i < m1cells.length; i++) {
+      var c = m1cells[i];
+      c.classList.remove('mc-active', 'mc-path', 'mc-dim');
+      if (!anyActive) continue;
+
+      var crow = c.dataset.m1row;
+      var ccol = c.dataset.m1col;
+      var isDataCell = crow && ccol;
+      var isActiveCell = isDataCell && crow === lof && ccol === loit;
+      var isPathRow = crow && !ccol && crow === lof;
+      var isPathCol = ccol && !crow && ccol === loit;
+      var isPathData = isDataCell && (crow === lof || ccol === loit);
+
+      if (isActiveCell) {
+        c.classList.add('mc-active');
+      } else if (isPathRow || isPathCol || isPathData) {
+        c.classList.add('mc-path');
+      } else {
+        c.classList.add('mc-dim');
+      }
+    }
+
+    // ── Matrix 2 ──
+    var m2cells = document.querySelectorAll('#mtx2 [data-m2row], #mtx2 [data-m2col]');
+    for (var j = 0; j < m2cells.length; j++) {
+      var d = m2cells[j];
+      d.classList.remove('mc-active', 'mc-path', 'mc-dim');
+      if (!anyActive) continue;
+
+      var drow = d.dataset.m2row;
+      var dcol = d.dataset.m2col;
+      var isDataCell2 = drow && dcol;
+      var isActiveCell2 = isDataCell2 && drow === lofi && dcol === cof;
+      var isPathRow2 = drow && !dcol && drow === lofi;
+      var isPathCol2 = dcol && !drow && dcol === cof;
+      var isPathData2 = isDataCell2 && (drow === lofi || dcol === cof);
+
+      if (isActiveCell2) {
+        d.classList.add('mc-active');
+      } else if (isPathRow2 || isPathCol2 || isPathData2) {
+        d.classList.add('mc-path');
+      } else {
+        d.classList.add('mc-dim');
+      }
+    }
+  }
+</script>
+</body>
+</html>
