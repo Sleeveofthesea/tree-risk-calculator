@@ -232,6 +232,170 @@
   .mc-path { filter: brightness(1.25); }
   .mc-dim  { opacity: 0.18; }
 
+  /* ── Fall zone button ── */
+  #fallzone-btn {
+    width: 100%; height: 34px; margin-top: 4px;
+    background: #12181b; border: 1px dashed #2e3e48;
+    border-radius: var(--radius); color: var(--muted);
+    font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 7px;
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+  }
+  #fallzone-btn:active { opacity: 0.7; }
+  #fallzone-btn.fz-clear     { background: #0c1f14; border-color: var(--low-glow);      color: var(--low-glow);      border-style: solid; }
+  #fallzone-btn.fz-marginal  { background: #1f1805; border-color: var(--moderate-glow); color: var(--moderate-glow); border-style: solid; }
+  #fallzone-btn.fz-in-range  { background: #1f0e05; border-color: var(--high-glow);     color: var(--high-glow);     border-style: solid; }
+  #fallzone-btn.fz-downslope { background: #150d1f; border-color: #a855f7;              color: #a855f7;              border-style: solid; }
+
+  /* -- Fall zone overlay -- */
+  #fz-overlay {
+    position: fixed; inset: 0; z-index: 150;
+    display: flex; flex-direction: column;
+    background: var(--bg);
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    max-width: 430px; margin: 0 auto;
+  }
+  #fz-overlay.open { transform: translateY(0); }
+
+  #fz-header {
+    flex-shrink: 0; display: flex; align-items: center;
+    padding: 0 16px; height: 56px; gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  #fz-header.fz-clear     { background: #0c1f14; border-color: var(--low-glow); }
+  #fz-header.fz-marginal  { background: #1f1805; border-color: var(--moderate-glow); }
+  #fz-header.fz-in-range  { background: #1f0e05; border-color: var(--high-glow); }
+  #fz-header.fz-downslope { background: #150d1f; border-color: #a855f7; }
+  #fz-header-title {
+    flex: 1; font-family: var(--font-ui); font-size: 13px;
+    font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text);
+    transition: color 0.3s;
+  }
+  #fz-header.fz-clear     #fz-header-title { color: var(--low-glow); }
+  #fz-header.fz-marginal  #fz-header-title { color: var(--moderate-glow); }
+  #fz-header.fz-in-range  #fz-header-title { color: var(--high-glow); }
+  #fz-header.fz-downslope #fz-header-title { color: #a855f7; }
+  #fz-close {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+    background: var(--border); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text); font-size: 18px; font-family: sans-serif;
+  }
+
+  #fz-body {
+    flex: 1; overflow-y: auto;
+    padding: 16px 14px 32px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  /* Input row */
+  .fz-inputs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .fz-field {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .fz-label {
+    font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+    text-align: center;
+  }
+  .fz-input {
+    height: 44px; background: var(--surface);
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    color: var(--text); font-family: var(--font-ui);
+    font-size: 22px; font-weight: 700; text-align: center;
+    outline: none; width: 100%;
+    -webkit-appearance: none; appearance: none;
+  }
+  .fz-input:focus { border-color: var(--accent); }
+  .fz-unit {
+    font-family: var(--font-ui); font-size: 9px;
+    color: var(--muted); text-align: center; letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Status badge */
+  #fz-status {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 10px 14px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--surface);
+    min-height: 44px;
+  }
+  #fz-status-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--muted); flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  #fz-status-text {
+    font-family: var(--font-ui); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
+    transition: color 0.3s;
+  }
+  #fz-status.fz-clear     { border-color: var(--low-glow);      background: #0c1f14; }
+  #fz-status.fz-marginal  { border-color: var(--moderate-glow); background: #1f1805; }
+  #fz-status.fz-in-range  { border-color: var(--high-glow);     background: #1f0e05; }
+  #fz-status.fz-downslope { border-color: #a855f7;              background: #150d1f; }
+  #fz-status.fz-clear     #fz-status-dot    { background: var(--low-glow); }
+  #fz-status.fz-marginal  #fz-status-dot    { background: var(--moderate-glow); }
+  #fz-status.fz-in-range  #fz-status-dot    { background: var(--high-glow); }
+  #fz-status.fz-downslope #fz-status-dot    { background: #a855f7; }
+  #fz-status.fz-clear     #fz-status-text   { color: var(--low-glow); }
+  #fz-status.fz-marginal  #fz-status-text   { color: var(--moderate-glow); }
+  #fz-status.fz-in-range  #fz-status-text   { color: var(--high-glow); }
+  #fz-status.fz-downslope #fz-status-text   { color: #a855f7; }
+
+  /* SVG diagram */
+  #fz-diagram-wrap {
+    background: #0d1418; border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  #fz-svg { width: 100%; display: block; }
+
+  /* Legend */
+  .fz-legend {
+    display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+  }
+  .fz-legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-family: var(--font-ui); font-size: 10px;
+    font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--muted);
+  }
+  .fz-legend-swatch {
+    width: 22px; height: 3px; border-radius: 2px;
+  }
+  #fz-slope-ctrl {
+    position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .fz-slope-btn {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #1a2530; border: 1px solid #2e3e48;
+    color: var(--text); font-size: 16px; font-weight: 700; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-ui);
+  }
+  .fz-slope-btn:active { opacity: 0.6; }
+  #fz-slope-label {
+    font-family: var(--font-ui); font-size: 9px; font-weight: 700;
+    color: var(--muted); letter-spacing: 0.04em; text-align: center;
+    min-width: 28px;
+  }
+  .fz-legend-target {
+    cursor: pointer; padding: 3px 7px;
+    border: 1px solid #2e3e48; border-radius: 4px;
+    transition: border-color 0.2s, background 0.2s;
+    color: #4a9eff;
+  }
+  .fz-legend-target:active { opacity: 0.7; }
+
   /* ── Detail overlay ── */
   #detail-overlay {
     position: fixed; inset: 0; z-index: 100;
@@ -287,7 +451,17 @@
     flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%;
     background: var(--accent); margin-top: 6px;
   }
-  .example-text { font-size: 15px; line-height: 1.45; color: var(--text); }
+  .example-text { font-size: 15px; line-height: 1.45; color: var(--text); flex: 1; }
+  .example-badge { font-size: 11px; font-weight: 500; white-space: nowrap; padding: 2px 7px; border-radius: 99px; flex-shrink: 0; margin-top: 2px; }
+  .badge-pro-imm { background: #FCEBEB; color: #A32D2D; }
+  .badge-pos-imm { background: #FAECE7; color: #993C1D; }
+  .badge-pos-pro { background: #FAEEDA; color: #854F0B; }
+  .badge-imp-pos { background: #EAF3DE; color: #3B6D11; }
+  .badge-imminent  { background: #FCEBEB; color: #A32D2D; }
+  .badge-probable  { background: #FAECE7; color: #993C1D; }
+  .badge-possible  { background: #FAEEDA; color: #854F0B; }
+  .badge-improbable { background: #EAF3DE; color: #3B6D11; }
+  .example-page { font-size: 11px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -319,6 +493,7 @@
       <button class="btn occ-btn" data-group="occ" data-occ-idx="1" data-value="Occasional"><div class="btn-fill"></div><span class="sel-dot"></span>Occasional</button>
       <button class="btn occ-btn" data-group="occ" data-occ-idx="0" data-value="Rare"><div class="btn-fill"></div><span class="sel-dot"></span>Rare</button>
     </div>
+    <button id="fallzone-btn" onclick="openFallZone()">Target Zone</button>
     <div class="section-label" style="margin-top:4px">Likelihood of Impacting Target</div>
     <div class="btn-group">
       <button class="btn loit-disabled" data-group="loit" data-value="High"><div class="btn-fill"></div><span class="sel-dot"></span>High</button>
@@ -346,6 +521,54 @@
 
 </main>
 
+<!-- ── Fall Zone overlay ── -->
+<div id="fz-overlay">
+  <div id="fz-header">
+    <div id="fz-header-title">Target Zone</div>
+    <button id="fz-close" onclick="closeFallZone()">&#x2715;</button>
+  </div>
+  <div id="fz-body">
+
+    <div class="fz-inputs">
+      <div class="fz-field">
+        <div class="fz-label">Tree Height</div>
+        <input class="fz-input" id="fz-height" type="number" inputmode="numeric" min="0" placeholder="—" oninput="updateFallZone()">
+        <div class="fz-unit">feet</div>
+      </div>
+      <div class="fz-field">
+        <div class="fz-label">Distance to Target</div>
+        <input class="fz-input" id="fz-dist" type="number" inputmode="numeric" min="0" placeholder="—" oninput="updateFallZone()">
+        <div class="fz-unit">feet</div>
+      </div>
+    </div>
+
+    <div id="fz-status">
+      <div id="fz-status-dot"></div>
+      <div id="fz-status-text">Enter height and distance</div>
+    </div>
+
+    <div id="fz-diagram-wrap" style="position:relative">
+      <svg id="fz-svg" viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="fz-slope-ctrl">
+        <button class="fz-slope-btn" onclick="adjSlope(1)">+</button>
+        <div id="fz-slope-label">0%</div>
+        <button class="fz-slope-btn" onclick="adjSlope(-1)">-</button>
+      </div>
+    </div>
+
+    <div class="fz-legend">
+      <div class="fz-legend-item" id="fz-legend-25x" style="display:none"><div class="fz-legend-swatch" style="background:#a855f7"></div>2.5x Downslope</div>
+      <div class="fz-legend-item"><div class="fz-legend-swatch" style="background:#ff6030"></div>1x Height</div>
+      <div class="fz-legend-item"><div class="fz-legend-swatch" style="background:#f5b830"></div>1.5x Height</div>
+      <div class="fz-legend-item fz-legend-target" id="fz-target-toggle" onclick="toggleFzTarget()">
+        <svg id="fz-legend-icon" width="14" height="14" viewBox="0 0 14 14" style="flex-shrink:0"></svg>
+        <span id="fz-legend-label">Person (6')</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <div id="detail-overlay">
   <div id="detail-header">
     <div id="detail-left">
@@ -360,7 +583,7 @@
       <div id="detail-definition"></div>
     </div>
     <div>
-      <div class="detail-section-title">Examples</div>
+      <div class="detail-section-title" id="detail-examples-title">Examples</div>
       <div id="detail-examples"></div>
     </div>
   </div>
@@ -473,22 +696,160 @@
   ];
 
   var detailContent = {
-    'occ|Constant':    { category: 'Occupancy Rate',                 definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'occ|Frequent':    { category: 'Occupancy Rate',                 definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'occ|Occasional':  { category: 'Occupancy Rate',                 definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'occ|Rare':        { category: 'Occupancy Rate',                 definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'lof|Imminent':    { category: 'Likelihood of Failure',          definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'lof|Probable':    { category: 'Likelihood of Failure',          definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'lof|Possible':    { category: 'Likelihood of Failure',          definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'lof|Improbable':  { category: 'Likelihood of Failure',          definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'loit|High':       { category: 'Likelihood of Impacting Target', definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'loit|Medium':     { category: 'Likelihood of Impacting Target', definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'loit|Low':        { category: 'Likelihood of Impacting Target', definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'loit|Very low':   { category: 'Likelihood of Impacting Target', definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'cof|Severe':      { category: 'Consequences of Failure',        definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'cof|Significant': { category: 'Consequences of Failure',        definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'cof|Minor':       { category: 'Consequences of Failure',        definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] },
-    'cof|Negligible':  { category: 'Consequences of Failure',        definition: '[ Add definition from ISA TRAQ 2025 BMP ]', examples: ['[ Add example ]', '[ Add example ]', '[ Add example ]'] }
+    'occ|Constant':   { category: 'Occupancy Rate', definition: 'The target is always or nearly always present.', examples: [
+      { text: 'Structures such as houses, buildings, powerlines, fences, light fixtures, sculptures, landscape plantings, and other features', page: 28 },
+      { text: 'People in areas that are nearly always occupied (city centers in cities that never sleep)', page: 28 },
+      { text: 'People in an event site during times in which the event is scheduled (the time frame is the event period)', page: 28 },
+      { text: 'Vehicles parked in long-term parking lots, high-use overnight parking spaces, and automotive sales lots', page: 29 },
+      { text: 'Vehicles traveling in a continuous flow on streets, roads, or highways nearly all times of the day and night', page: 29 },
+      { text: 'Recreational vehicles in busy campgrounds when the time frame is the camping season', page: 29 },
+    ]},
+    'occ|Frequent':   { category: 'Occupancy Rate', definition: 'The target is present much of the time.', examples: [
+      { text: 'People in busy areas such as city centers, transit hubs, and shopping areas', page: 29 },
+      { text: 'Vehicles that are parked in the target zone most of the day or night', page: 29 },
+      { text: 'Vehicles traveling on busy streets, roads, or highways', page: 29 },
+      { text: 'People in busy campgrounds when the time frame is the camping season', page: 29 },
+    ]},
+    'occ|Occasional': { category: 'Occupancy Rate', definition: 'The target is present intermittently.', examples: [
+      { text: 'People using residential sidewalks or foot paths near schools or shopping areas', page: 29 },
+      { text: 'People using public garden trails', page: 29 },
+      { text: 'People in picnic areas or seasonal campgrounds within a one-year time frame', page: 29 },
+      { text: 'Vehicles parked during the day on lightly used residential streets', page: 29 },
+      { text: 'Vehicles moving on streets with moderate traffic', page: 29 },
+    ]},
+    'occ|Rare':       { category: 'Occupancy Rate', definition: 'The target is not commonly in the target zone.', examples: [
+      { text: 'People walking to a parked car, garage, or storage building', page: 29 },
+      { text: 'People mowing their lawn', page: 29 },
+      { text: 'People on lightly used residential sidewalks, hiking trails, or foot paths', page: 29 },
+      { text: 'People visiting a cemetery', page: 30 },
+      { text: 'Vehicle parked for deliveries or traveling on lightly used residential streets', page: 30 },
+    ]},
+    'lof|Imminent':   { category: 'Likelihood of Failure', definition: 'Failure has begun or will occur soon in normal weather or with minimal additional loading.', examples: [
+      { text: 'Recently broken hanging branch not well-supported by other branches', range: 'imminent', page: 41 },
+      { text: 'Dead tree or branch with extensive decay at the base', range: 'imminent', page: 41 },
+      { text: 'Codominant stem with a crack below the union that opens and closes as the tree moves in the wind', range: 'imminent', page: 41 },
+      { text: 'Transverse (horizontal) crack that goes into the wood of the trunk', range: 'imminent', page: 41 },
+      { text: 'Visually apparent soil lifting in response to trunk and root movement', range: 'imminent', page: 41 },
+      { text: 'Broken or hanging branches (hangers/lodged)',                              range: 'pro-imm' , page: 86 },
+      { text: 'Included bark with significant decay in or near union',                    range: 'pro-imm' , page: 89 },
+      { text: 'Included bark — cracks present below union',                          range: 'pro-imm' , page: 89 },
+      { text: 'Bowed trees with cracks, under wind/snow/freezing rain loads',             range: 'pro-imm' , page: 94 },
+      { text: 'Recently leaning tree',                                                    range: 'pro-imm' , page: 93 },
+      { text: 'Dead branches — depending on species, branch weight, decay, infestation, time dead', range: 'pos-imm', page: 85 },
+      { text: 'Cracks — depending on type, expected loads, tree response',           range: 'pos-imm' , page: 87 },
+      { text: 'Ribs with active cracks — evaluated same as cracks',                  range: 'pos-imm' , page: 88 },
+      { text: 'Cracks extending completely through the stem or branch',                   range: 'pos-imm' , page: 87 },
+      { text: 'Cracks above cavity openings that have partially failed',                  range: 'pos-imm' , page: 87 },
+    ]},
+    'lof|Probable':   { category: 'Likelihood of Failure', definition: 'Failure may occur in normal weather and is expected to occur in severe weather within the specified time frame.', examples: [
+      { text: 'Broken or hanging branches (hangers/lodged)',                              range: 'pro-imm' , page: 86 },
+      { text: 'Included bark with significant decay in or near union',                    range: 'pro-imm' , page: 89 },
+      { text: 'Included bark — cracks present below union',                          range: 'pro-imm' , page: 89 },
+      { text: 'Bowed trees with cracks, under wind/snow/freezing rain loads',             range: 'pro-imm' , page: 94 },
+      { text: 'Recently leaning tree',                                                    range: 'pro-imm' , page: 93 },
+      { text: 'Broken hanging branch lodged in other branches', range: 'probable', page: 41 },
+      { text: 'Dead branch', range: 'probable', page: 41 },
+      { text: 'Weakly attached or overextended horizontal branch with multiple, heavy adventitious sprouts', range: 'probable', page: 41 },
+      { text: 'Codominant stem with significant heartwood decay within or below the union', range: 'probable', page: 41 },
+      { text: 'Tall, exposed tree with low live crown ratio and extensive heartwood decay in the lower trunk', range: 'probable', page: 41 },
+      { text: 'Exposed tree with all structural roots on one side of the tree cut or decayed', range: 'probable', page: 41 },
+      { text: 'Seams covering cracks or decay',                                           range: 'pos-pro' , page: 87 },
+      { text: 'Multiple branches at one point — some species, depending on load and weight distribution', range: 'pos-pro', page: 89 },
+      { text: 'Included bark on codominant stems — many species',                    range: 'pos-pro' , page: 89 },
+      { text: 'Adventitious branches — decay present',                               range: 'pos-pro' , page: 90 },
+      { text: 'Bowed trees — stem diameter not increased by response growth',        range: 'pos-pro' , page: 94 },
+      { text: 'History of branch failure — additional similarly constructed branches', range: 'pos-pro', page: 90 },
+    ]},
+    'lof|Possible':   { category: 'Likelihood of Failure', definition: 'Failure is not likely in normal weather but may occur in severe weather within the specified time frame.', examples: [
+      { text: 'Dead branches — depending on species, branch weight, decay, infestation, time dead', range: 'pos-imm', page: 85 },
+      { text: 'Cracks — depending on type, expected loads, tree response',           range: 'pos-imm' , page: 87 },
+      { text: 'Ribs with active cracks — evaluated same as cracks',                  range: 'pos-imm' , page: 88 },
+      { text: 'Seams covering cracks or decay',                                           range: 'pos-pro' , page: 87 },
+      { text: 'Multiple branches at one point — some species, depending on load and weight distribution', range: 'pos-pro', page: 89 },
+      { text: 'Included bark on codominant stems — many species',                    range: 'pos-pro' , page: 89 },
+      { text: 'Adventitious branches — decay present',                               range: 'pos-pro' , page: 90 },
+      { text: 'Bowed trees — stem diameter not increased by response growth',        range: 'pos-pro' , page: 94 },
+      { text: 'History of branch failure — additional similarly constructed branches', range: 'pos-pro', page: 90 },
+      { text: 'Declining branch that is likely to die', range: 'possible', page: 41 },
+      { text: 'Overextended branch on species prone to dropping live branches', range: 'possible', page: 41 },
+      { text: 'Codominant stem with included bark and narrow attachment', range: 'possible', page: 41 },
+      { text: 'Tree with a moderate amount of heartwood decay in the lower trunk', range: 'possible', page: 42 },
+      { text: 'Trunk with a seam and heartwood decay', range: 'possible', page: 42 },
+      { text: 'Tree with a few structural roots cut or decayed', range: 'possible', page: 42 },
+      { text: 'Seams with solid wood behind them (no decay)',                             range: 'imp-pos' , page: 87 },
+      { text: 'Ribs covering closed cracks (evaluated same as seams)',                    range: 'imp-pos' , page: 88 },
+      { text: 'Multiple branches at one point — more resilient species',             range: 'imp-pos' , page: 89 },
+      { text: 'Adventitious branches — no decay',                                    range: 'imp-pos' , page: 90 },
+      { text: 'Adventitious branches — decay present with significant response growth', range: 'imp-pos', page: 90 },
+      { text: 'Corrected leans (sweeps)',                                                 range: 'imp-pos' , page: 94 },
+    ]},
+    'lof|Improbable': { category: 'Likelihood of Failure', definition: 'Failure is not likely in normal or severe weather within the specified time frame.', examples: [
+      { text: 'Seams with solid wood behind them (no decay)',                             range: 'imp-pos' , page: 87 },
+      { text: 'Ribs covering closed cracks (evaluated same as seams)',                    range: 'imp-pos' , page: 88 },
+      { text: 'Multiple branches at one point — more resilient species',             range: 'imp-pos' , page: 89 },
+      { text: 'Adventitious branches — no decay',                                    range: 'imp-pos' , page: 90 },
+      { text: 'Adventitious branches — decay present with significant response growth', range: 'imp-pos', page: 90 },
+      { text: 'Corrected leans (sweeps)',                                                 range: 'imp-pos' , page: 94 },
+      { text: 'Healthy branches with good taper and weight distribution', range: 'improbable', page: 42 },
+      { text: 'Branch with shear plane failure and years of woundwood development', range: 'improbable', page: 42 },
+      { text: 'Codominant stem with U-shaped union without included bark', range: 'improbable', page: 42 },
+      { text: 'One-sided crown with no other trunk or root conditions', range: 'improbable', page: 42 },
+      { text: 'Trunk with seam and no heartwood decay', range: 'improbable', page: 42 },
+      { text: 'Trunk with less than one-third of the central heartwood decayed', range: 'improbable', page: 42 },
+      { text: 'Leaning tree with vertical growth at the top (corrected lean)', range: 'improbable', page: 42 },
+      { text: 'Tree with minimal damage on visible structural roots', range: 'improbable', page: 42 },
+      { text: 'A tree or tree part with no visible defects', range: 'improbable', page: 42 },
+    ]},
+    'loit|High':     { category: 'Likelihood of Impacting Target', definition: 'The failed tree is likely to impact the target. Applies when there is constant occupancy within the target zone, no protection, and the direction of fall is toward the target.', examples: [
+      { text: 'Tree leaning directly toward a building: constant occupancy, no protection, lean directs fall toward the building', page: 43 },
+      { text: 'Tree leaning directly over a road with continuous traffic flow: constant occupancy, lean directs fall toward the road, no protection', page: 44 },
+      { text: 'Branch directly over a building without any protection factors: constant occupancy, branch falls directly toward building, no protection', page: 44 },
+      { text: 'Tree surrounded by structures within the target zone: constant occupancy, structures surround the tree, nothing prevents impact if it falls', page: 44 },
+    ]},
+    'loit|Medium':   { category: 'Likelihood of Impacting Target', definition: 'The failed tree could impact the target but is not expected to do so. Applies when mobile targets are frequently within the target zone and direction of fall is toward the target, when direction of fall may or may not be toward a static target, or when a static target has constant occupancy and may be protected from the falling tree.', examples: [
+      { text: 'Branch high in a tree with lower branches between it and a building below: constant occupancy, branch falls toward building, but lower branches may prevent impact', page: 44 },
+      { text: 'Tree with no lean next to an electrical utility wire within the target zone: constant occupancy, nothing prevents impact toward the wire, but fall direction is impossible to predict', page: 44 },
+      { text: 'Branch over an arterial street with regular traffic flow: frequent occupancy, branch falls directly toward street, no protection', page: 44 },
+      { text: 'Tree with no lean next to a street with continuous traffic flow: constant occupancy, nothing prevents impact toward street, but fall direction is impossible to predict', page: 45 },
+    ]},
+    'loit|Low':      { category: 'Likelihood of Impacting Target', definition: 'There is a slight chance that if the tree were to fail it will impact the target. Applies when mobile targets are occasionally in the target zone, when the expected direction of fall is not toward the target, or when a constant target is protected from the falling tree.', examples: [
+      { text: 'Branch in close proximity to, but not directly over, a building: constant occupancy, nothing prevents impact, but branch will not fall directly toward the building', page: 45 },
+      { text: 'Tree leaning toward an arterial street with a larger tree between it and the street: frequent occupancy, lean directs fall toward street, but larger tree dramatically reduces chance of impact', page: 45 },
+      { text: 'Tree next to a sidewalk sometimes used by pedestrians: occasional occupancy, slight lean toward sidewalk, nothing will prevent impact', page: 45 },
+      { text: 'Tree leaning toward an apartment building with people inside as the target: frequent occupancy, lean directs fall, but the building reduces chance of impacting a person inside', page: 45 },
+    ]},
+    'loit|Very low': { category: 'Likelihood of Impacting Target', definition: 'The chance of the failed tree impacting the specified target is remote. Applies when target zone occupancy is rare, when the tree is likely to fall in the opposite direction of the target, when occupancy is occasional and the tree may or may not fall toward the target, when occupancy is frequent and the tree is likely to fall in a different direction, or when occupancy is constant and the tree would fall in a different direction or the target is well protected.', examples: [
+      { text: 'Tree near a hiking trail or sidewalk that very few pedestrians use: rare occupancy, no protection, fall direction is toward pedestrians', page: 46 },
+      { text: 'Tree next to a sidewalk sometimes used by pedestrians with a larger tree between it and the sidewalk: occasional occupancy, tree not leaning so fall direction unpredictable, larger tree reduces chance of impact', page: 46 },
+      { text: 'Branch directly over a bus stop covered by a sturdy roof: frequent occupancy, branch falls directly toward bus stop, but roof dramatically reduces chance of impacting a person', page: 46 },
+      { text: 'Tree leaning away from a historic statue: constant occupancy, lean directs fall away from statue, nothing will prevent impact if it falls toward statue', page: 46 },
+    ]},
+    'cof|Severe':      { category: 'Consequences of Failure', definition: 'Consequences that could involve serious personal injury or death, high-cost damage to property, or major disruption of important activities.', examples: [
+      { text: 'Injury to one or more people that may result in death or disability', page: 51 },
+      { text: 'Extensive damage to or destruction of a high-value structure (e.g., a home or business)', page: 51 },
+      { text: 'Widespread, multiple-day power outages, or indirect consequences such as wildfire', page: 51 },
+      { text: 'Disruption of major transportation corridors resulting in large economic losses or obstructed access to critical emergency services', page: 51 },
+    ]},
+    'cof|Significant': { category: 'Consequences of Failure', definition: 'Consequences that involve significant personal injury, substantial damage to property, or considerable disruption of activities.', examples: [
+      { text: 'Personal injury requiring professional medical care', page: 52 },
+      { text: 'Serious damage to or total loss of a vehicle', page: 52 },
+      { text: 'Damage to a structure (e.g., a home or business) that is expensive to repair', page: 52 },
+      { text: 'Medium-duration power outages to many customers or damage to utility facilities', page: 52 },
+      { text: 'Disruption of arterial traffic causing an extended blockage and/or rerouting of traffic', page: 52 },
+    ]},
+    'cof|Minor':       { category: 'Consequences of Failure', definition: 'Consequences that involve minor personal injury, low- to moderate-value damage to property, or some disruption of activities.', examples: [
+      { text: 'Injury to a person, not requiring professional medical care or hospitalization', page: 52 },
+      { text: 'Damage to a structure or vehicle requiring inexpensive repair', page: 52 },
+      { text: 'Short-term power outage to a few customers or minor utility facility damage', page: 52 },
+      { text: 'Temporary stoppage or disruption of traffic on a secondary street', page: 52 },
+    ]},
+    'cof|Negligible':  { category: 'Consequences of Failure', definition: 'Consequences that do not result in personal injury, involve low-value damage to property that can be replaced or repaired, or cause short-term disruptions.', examples: [
+      { text: 'Cosmetic damage to a structure or vehicle that may or may not be repaired', page: 52 },
+      { text: 'Low-value damage to infrastructure', page: 52 },
+      { text: 'Short-term power outage to a house', page: 52 },
+      { text: 'Temporary disruption of traffic on a neighborhood street', page: 53 },
+      { text: 'Damage to a lawn or landscape bed', page: 53 },
+    ]}
   };
 
   var state = { lof: null, loit: null, cof: null };
@@ -564,7 +925,7 @@
 
   function showPending() {
     document.getElementById('result').className = '';
-    document.getElementById('result-rating').textContent = '—';
+    document.getElementById('result-rating').textContent = '\u2014';
     document.body.className = '';
   }
 
@@ -581,23 +942,40 @@
     document.getElementById('detail-category').textContent   = content.category;
     document.getElementById('detail-title').textContent      = value;
     document.getElementById('detail-definition').textContent = content.definition;
+    var exTitle = document.getElementById('detail-examples-title');
+    if (exTitle) exTitle.textContent = (group === 'lof' && value !== 'Imminent') ? 'Examples within a 3 year time frame' : 'Examples';
     var exEl = document.getElementById('detail-examples');
     exEl.innerHTML = '';
+    var badgeClass = { 'pro-imm':'badge-pro-imm','pos-imm':'badge-pos-imm','pos-pro':'badge-pos-pro','imp-pos':'badge-imp-pos','imminent':'badge-imminent','probable':'badge-probable','possible':'badge-possible','improbable':'badge-improbable' };
+    var badgeLabel = { 'pro-imm':'probable → imminent','pos-imm':'possible → imminent','pos-pro':'possible → probable','imp-pos':'improbable → possible','imminent':'imminent','probable':'probable','possible':'possible','improbable':'improbable' };
     for (var i = 0; i < content.examples.length; i++) {
+      var ex = content.examples[i];
       var item   = document.createElement('div'); item.className = 'example-item';
       var bullet = document.createElement('div'); bullet.className = 'example-bullet';
       var text   = document.createElement('div'); text.className = 'example-text';
-      text.textContent = content.examples[i];
+      text.textContent = (typeof ex === 'object') ? ex.text : ex;
       item.appendChild(bullet); item.appendChild(text);
+      if (typeof ex === 'object' && ex.range) {
+        var badge = document.createElement('div');
+        badge.className = 'example-badge ' + (badgeClass[ex.range] || '');
+        badge.textContent = badgeLabel[ex.range] || ex.range;
+        item.appendChild(badge);
+      }
+      if (typeof ex === 'object' && ex.page) {
+        var pg = document.createElement('div');
+        pg.className = 'example-page';
+        pg.textContent = 'p.' + ex.page;
+        item.appendChild(pg);
+      }
       exEl.appendChild(item);
     }
     document.getElementById('detail-body').scrollTop = 0;
     document.getElementById('detail-overlay').classList.add('open');
   }
 
-  function closeDetail() {
+  window.closeDetail = function() {
     document.getElementById('detail-overlay').classList.remove('open');
-  }
+  };
 
   document.getElementById('detail-close').addEventListener('click', closeDetail);
 
@@ -616,7 +994,549 @@
   // Init occupancy to Occasional
   applyOccupancy(1);
 
-  // ── Matrix overlay ──
+  // -- Fall Zone overlay --
+  var fzOverlay = document.getElementById('fz-overlay');
+
+  window.openFallZone = function() {
+    fzOverlay.classList.add('open');
+    updateFzLegendIcon();
+    updateFallZone();
+  }
+  window.closeFallZone = function() {
+    fzOverlay.classList.remove('open');
+  };
+
+  var fzSwipeY = 0;
+  fzOverlay.addEventListener('touchstart', function(e) {
+    fzSwipeY = e.touches[0].clientY;
+  }, { passive: true });
+  fzOverlay.addEventListener('touchend', function(e) {
+    if (e.changedTouches[0].clientY - fzSwipeY > 80) closeFallZone();
+  }, { passive: true });
+
+  function updateFallZone() {
+    var h = parseFloat(document.getElementById('fz-height').value);
+    var d = parseFloat(document.getElementById('fz-dist').value);
+    var statusEl   = document.getElementById('fz-status');
+    var statusText = document.getElementById('fz-status-text');
+    var btn        = document.getElementById('fallzone-btn');
+
+    if (!h || !d || h <= 0 || d <= 0) {
+      statusEl.className = '';
+      statusText.textContent = 'Enter height and distance';
+      btn.className = '';
+      btn.textContent = 'Target Zone';
+      document.getElementById('fz-header').className = '';
+      drawFallZone(null, null);
+      return;
+    }
+
+    var zone1x  = h;
+    var zone15x = h * 1.5;
+
+    // Use same circle/ellipse math as the diagram:
+    // 1x = circle radius h, 1.5x = ellipse rx=1.5h ry=h, both centred at tree base.
+    // Target elevation follows slope up to h ft, then flat.
+    var slopeFrac = (window.fzSlopePct || 0) / 100;
+    var tgtElev   = Math.min(d, h) * slopeFrac;  // ft above/below tree base
+    var dx = d;          // horizontal ft
+    var dy = -tgtElev;   // vertical ft (uphill = negative = above base)
+    var zone25x = h * 2.5;
+    var in1x  = (dx*dx)/(h*h)               + (dy*dy)/(h*h) <= 1;
+    var in15x = (dx*dx)/(zone15x*zone15x)   + (dy*dy)/(h*h) <= 1;
+    var in25x = slopeFrac < 0 && (dx*dx)/(zone25x*zone25x) + (dy*dy)/(h*h) <= 1;
+
+    // Past -20% slope, downslope risk overrides marginal
+    var steepDownslope = (window.fzSlopePct || 0) <= -20;
+    var statusClass, label, detail;
+    if (in1x) {
+      statusClass = 'fz-in-range';
+      label  = 'In Range';
+      detail = 'Target at ' + d.toFixed(0) + "' - within 1x zone";
+    } else if (in15x && !(steepDownslope && in25x)) {
+      statusClass = 'fz-marginal';
+      label  = 'Marginal';
+      detail = 'Target at ' + d.toFixed(0) + "' - between 1x and 1.5x";
+    } else if (in25x) {
+      statusClass = 'fz-downslope';
+      label  = 'Downslope Risk';
+      detail = 'Target at ' + d.toFixed(0) + "' - within 2.5x downslope zone";
+    } else {
+      statusClass = 'fz-clear';
+      label  = 'Out of Range';
+      detail = 'Target at ' + d.toFixed(0) + "' - outside fall zones";
+    }
+
+    statusEl.className = statusClass;
+    statusText.innerHTML = '<strong>' + label + '</strong>  <span style="font-weight:400;font-size:11px;opacity:0.8">' + detail + '</span>';
+    btn.className = statusClass;
+    btn.textContent = 'Target Zone  |  ' + label;
+    document.getElementById('fz-header').className = statusClass;
+    drawFallZone(h, d);
+  }
+
+  window.fzSlopePct = 0;
+
+  window.adjSlope = function(dir) {
+    var step = 5;
+    window.fzSlopePct = Math.max(-55, Math.min(55, window.fzSlopePct + dir * step));
+    document.getElementById('fz-slope-label').textContent =
+      (window.fzSlopePct > 0 ? '+' : '') + window.fzSlopePct + '%';
+    updateFallZone();
+  };
+
+  function drawFallZone(h, d) {
+    var svg = document.getElementById('fz-svg');
+    svg.innerHTML = '';
+
+    var W     = 360;
+    var SVG_H = 260;
+    var baseY = 155;   // Y of tree base on screen (fixed)
+    var treeX = 50;
+    var PAD_R = 36;
+
+    function el(tag, attrs) {
+      var e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (var k in attrs) e.setAttribute(k, attrs[k]);
+      return e;
+    }
+    function s(node) { svg.appendChild(node); return node; }
+    function txt(str, x, y, attrs) {
+      var base = { x: x, y: y,
+        'font-family': 'Roboto Condensed, Arial Narrow, Arial, sans-serif',
+        'font-size': '9', fill: '#5a6872', 'text-anchor': 'middle' };
+      for (var k in attrs) base[k] = attrs[k];
+      var t = el('text', base);
+      t.textContent = str;
+      return t;
+    }
+
+    var slopePct  = window.fzSlopePct || 0;
+    var slopeFrac = slopePct / 100;   // +ve = uphill away from tree
+
+    // Scale must satisfy TWO constraints so tree and zones always fit:
+    //   1) horizontal: 1.5x zone fits in available width
+    //   2) vertical:   tree height fits below top of SVG
+    // Take the smaller of the two so neither overflows.
+    var scaleH = (W - treeX - PAD_R) / (h * 1.5 * 1.08);  // width constraint
+    var scaleV = (baseY - 16) / h;                           // height constraint
+    var scale  = Math.min(scaleH, scaleV);
+
+    // With this scale, treeH == h*scale exactly (never capped).
+    var treeH    = h * scale;
+    var treeTopY = baseY - treeH;
+
+    // Ground Y at a given horizontal distance (ft) from tree base.
+    // Slopes from tree base to 1x, then flat.
+    function gY(xFt) {
+      var rise = Math.min(xFt, h) * slopeFrac * scale;
+      return baseY - rise;
+    }
+
+    // ── Terrain fill ──────────────────────────────────────────────
+    var xFlat  = treeX + h * scale;          // x where slope becomes flat
+    var yFlat  = gY(h);                       // flat ground level beyond 1x
+    var xEdge  = W - 2;
+    s(el('polygon', {
+      points: treeX+','+baseY+' '+
+              xFlat.toFixed(1)+','+yFlat.toFixed(1)+' '+
+              xEdge+','+yFlat.toFixed(1)+' '+
+              xEdge+','+SVG_H+' '+
+              treeX+','+SVG_H,
+      fill: '#16212a', stroke: 'none'
+    }));
+    s(el('polygon', {
+      points: '0,'+baseY+' '+treeX+','+baseY+' '+treeX+','+SVG_H+' 0,'+SVG_H,
+      fill: '#16212a', stroke: 'none'
+    }));
+
+    if (!h || !d) {
+      s(el('line', { x1:0, y1:baseY, x2:W, y2:baseY, stroke:'#3a5060','stroke-width':'1.5' }));
+      drawTree(svg, el, treeX, baseY, 80);
+      s(txt('Enter height and distance above', W/2, baseY+26, { 'font-size':'10', fill:'#3a4850' }));
+      return;
+    }
+
+    // ── Zone geometry ─────────────────────────────────────────────
+    // 1x zone: circle centred at tree base, radius = h (in real ft → h*scale px)
+    // 1.5x zone: ellipse centred at tree base, rx = 1.5h*scale, ry = h*scale
+    // Both are clipped to only show the region above the sloped ground,
+    // and only to the right of the tree (the fall-away side).
+    //
+    // We draw them as SVG clip-masked shapes:
+    //   - Full circle/ellipse drawn at tree base origin
+    //   - Clipped by a polygon representing the above-ground, right-of-tree region
+
+    var r1   = h   * scale;          // 1x radius (px)
+    var rx15 = h * 1.5 * scale;      // 1.5x horizontal radius (px)
+    var ry15 = h   * scale;          // 1.5x vertical radius = same as r1
+    var rx25 = h * 2.5 * scale;      // 2.5x horizontal radius (px) — downslope only
+    var ry25 = h   * scale;          // 2.5x vertical radius = h
+
+    // Build a clip path: the region above the sloped ground and right of treeX
+    // Polygon: treeX,baseY → along slope to xFlat,yFlat → flat to far right →
+    //          far right top → top left → back to treeX,treeX (top of tree column)
+    var clipPts =
+      treeX+','+baseY+' '+
+      xFlat.toFixed(1)+','+yFlat.toFixed(1)+' '+
+      (W+10)+','+yFlat.toFixed(1)+' '+
+      (W+10)+','+(-50)+' '+
+      treeX+','+(-50);
+
+    var defs = el('defs', {});
+    // Trunk gradient
+    var tgrad = el('linearGradient', { id:'fz-trunk', x1:'0', y1:'0', x2:'1', y2:'0' });
+    var ts1 = el('stop', {}); ts1.setAttribute('offset','0%');   ts1.setAttribute('stop-color','#1e0f06');
+    var ts2 = el('stop', {}); ts2.setAttribute('offset','40%');  ts2.setAttribute('stop-color','#3a1f0a');
+    var ts3 = el('stop', {}); ts3.setAttribute('offset','100%'); ts3.setAttribute('stop-color','#1a0d05');
+    tgrad.appendChild(ts1); tgrad.appendChild(ts2); tgrad.appendChild(ts3);
+    defs.appendChild(tgrad);
+    var cp1  = el('clipPath', { id: 'cp1' });
+    cp1.appendChild(el('polygon', { points: clipPts }));
+    defs.appendChild(cp1);
+    var cp2  = el('clipPath', { id: 'cp2' });
+    cp2.appendChild(el('polygon', { points: clipPts }));
+    defs.appendChild(cp2);
+    var cp25 = el('clipPath', { id: 'cp25' });
+    cp25.appendChild(el('polygon', { points: clipPts }));
+    defs.appendChild(cp25);
+
+    // mask25: show only annular band between 1.5x and 2.5x
+    var mask25 = el('mask', { id: 'mask25' });
+    mask25.appendChild(el('rect',    { x:-500, y:-500, width:2000, height:2000, fill:'white' }));
+    mask25.appendChild(el('ellipse', { cx:treeX, cy:baseY, rx:rx15.toFixed(1), ry:ry15.toFixed(1), fill:'black' }));
+    defs.appendChild(mask25);
+
+    svg.appendChild(defs);
+
+    // ── 2.5x downslope zone (drawn first = behind everything) ─────
+    var legend25 = document.getElementById('fz-legend-25x');
+    if (slopePct < 0) {
+      if (legend25) legend25.style.display = '';
+      s(el('ellipse', {
+        cx: treeX, cy: baseY, rx: rx25.toFixed(1), ry: ry25.toFixed(1),
+        fill: 'rgba(168,85,247,0.10)', stroke: 'none',
+        'clip-path': 'url(#cp25)', mask: 'url(#mask25)'
+      }));
+      s(el('ellipse', {
+        cx: treeX, cy: baseY, rx: rx25.toFixed(1), ry: ry25.toFixed(1),
+        fill: 'none', stroke: '#a855f7', 'stroke-width': '1.5',
+        'stroke-dasharray': '5 3', opacity: '0.8',
+        'clip-path': 'url(#cp25)'
+      }));
+      // 2.5x distance label
+      var x25Label = treeX + rx25;
+      if (x25Label < W - 4) {
+        s(el('line', { x1:x25Label.toFixed(1), y1:(yFlat-4).toFixed(1),
+                       x2:x25Label.toFixed(1), y2:(yFlat+4).toFixed(1),
+                       stroke:'#a855f7','stroke-width':'1.5' }));
+        s(txt((h*2.5).toFixed(0)+"'", x25Label, yFlat-10, { fill:'#a855f7','font-size':'8' }));
+      }
+    } else {
+      if (legend25) legend25.style.display = 'none';
+    }
+
+    // 1.5x ellipse fill — only in the annular band (clip to terrain, mask out 1x circle)
+    var mask15 = el('mask', { id: 'mask15' });
+    // White = show, black = hide. Show everything in clip region, hide the 1x circle interior.
+    mask15.appendChild(el('rect',    { x:-500, y:-500, width:1000, height:1000, fill:'white' }));
+    mask15.appendChild(el('circle',  { cx:treeX, cy:baseY, r:r1.toFixed(1), fill:'black' }));
+    defs.appendChild(mask15);
+
+    var e15fill = el('ellipse', {
+      cx: treeX, cy: baseY, rx: rx15.toFixed(1), ry: ry15.toFixed(1),
+      fill: 'rgba(245,184,48,0.12)', stroke: 'none',
+      'clip-path': 'url(#cp2)', mask: 'url(#mask15)'
+    });
+    s(e15fill);
+
+    // 1x circle fill
+    var e1fill = el('circle', {
+      cx: treeX, cy: baseY, r: r1.toFixed(1),
+      fill: 'rgba(255,96,48,0.15)', stroke: 'none',
+      'clip-path': 'url(#cp1)'
+    });
+    s(e1fill);
+
+    // 1.5x ellipse stroke
+    s(el('ellipse', {
+      cx: treeX, cy: baseY, rx: rx15.toFixed(1), ry: ry15.toFixed(1),
+      fill: 'none', stroke: '#f5b830', 'stroke-width': '1.5',
+      'stroke-dasharray': '5 3', opacity: '0.85',
+      'clip-path': 'url(#cp2)'
+    }));
+
+    // 1x circle stroke
+    s(el('circle', {
+      cx: treeX, cy: baseY, r: r1.toFixed(1),
+      fill: 'none', stroke: '#ff6030', 'stroke-width': '1.5',
+      'stroke-dasharray': '5 3', opacity: '0.9',
+      'clip-path': 'url(#cp1)'
+    }));
+
+    // ── Ground surface lines ──────────────────────────────────────
+    s(el('line', { x1:0, y1:baseY, x2:treeX, y2:baseY, stroke:'#3a5060','stroke-width':'1.5' }));
+    s(el('line', { x1:treeX, y1:baseY,
+                   x2:xFlat.toFixed(1), y2:yFlat.toFixed(1),
+                   stroke:'#3a5060','stroke-width':'1.5' }));
+    s(el('line', { x1:xFlat.toFixed(1), y1:yFlat.toFixed(1),
+                   x2:xEdge, y2:yFlat.toFixed(1),
+                   stroke:'#3a5060','stroke-width':'1.5' }));
+
+    // ── Zone distance tick labels ─────────────────────────────────
+    var x1Label  = treeX + r1;
+    var x15Label = treeX + rx15;
+    s(el('line', { x1:x1Label.toFixed(1), y1:(yFlat-4).toFixed(1),
+                   x2:x1Label.toFixed(1), y2:(yFlat+4).toFixed(1),
+                   stroke:'#ff6030','stroke-width':'1.5' }));
+    s(txt((h).toFixed(0)+"'", x1Label, yFlat-10, { fill:'#ff6030','font-size':'8' }));
+
+    if (x15Label < W - 10) {
+      s(el('line', { x1:x15Label.toFixed(1), y1:(yFlat-4).toFixed(1),
+                     x2:x15Label.toFixed(1), y2:(yFlat+4).toFixed(1),
+                     stroke:'#f5b830','stroke-width':'1.5' }));
+      s(txt((h*1.5).toFixed(0)+"'", x15Label, yFlat-10, { fill:'#f5b830','font-size':'8' }));
+    }
+
+    // ── Is target in zone? ────────────────────────────────────────
+    // Check if target point (d ft horiz, tgtElev ft up) is inside circle/ellipse
+    var tgtElev = Math.min(d, h) * slopeFrac;  // elevation matches sloped ground up to 1x
+    var tgtElevPx = tgtElev * scale;
+    // In ellipse coords relative to tree base:
+    var dx = d * scale;           // horizontal px from tree base
+    var dy = -tgtElevPx;          // vertical px (upward = negative screen Y = negative here)
+    var in1x  = (dx*dx)/(r1*r1)   + (dy*dy)/(r1*r1)   <= 1;
+    var in15x = (dx*dx)/(rx15*rx15) + (dy*dy)/(ry15*ry15) <= 1;
+
+    var tgtColor  = '#4a9eff';
+    var in25xDraw = slopePct < 0 && (dx*dx)/(rx25*rx25) + (dy*dy)/(ry25*ry25) <= 1;
+    var steepDown = slopePct <= -20;
+    var zoneColor = in1x ? '#ff6030' : (in15x && !(steepDown && in25xDraw)) ? '#f5b830' : in25xDraw ? '#a855f7' : '#3ddc8c';
+
+    // ── Target figure ─────────────────────────────────────────────
+    var xTgt  = treeX + dx;
+    var yTgt  = gY(d);
+    var personH = Math.max(8, Math.min(6*scale, treeH*0.8));
+    if (window.fzTargetType === 'house') {
+      drawHouse(svg, el, xTgt, yTgt, Math.max(12, 25*scale), tgtColor);
+    } else {
+      drawPerson(svg, el, xTgt, yTgt, personH, tgtColor);
+    }
+
+    // ── Tree ──────────────────────────────────────────────────────
+    drawTree(svg, el, treeX, baseY, treeH);
+
+    // ── Horizontal distance line ──────────────────────────────────
+    s(el('line', {
+      x1:treeX, y1:baseY+8, x2:xTgt.toFixed(1), y2:baseY+8,
+      stroke:zoneColor, 'stroke-width':'1', opacity:'0.45'
+    }));
+    s(el('line', { x1:xTgt.toFixed(1), y1:(baseY+4).toFixed(1),
+                   x2:xTgt.toFixed(1), y2:(baseY+12).toFixed(1),
+                   stroke:zoneColor,'stroke-width':'1.5',opacity:'0.6' }));
+    s(txt(d.toFixed(0)+"'", treeX+(xTgt-treeX)*0.5, baseY+20,
+      { fill:zoneColor,'font-size':'8','font-weight':'600' }));
+
+    // ── Slope label ───────────────────────────────────────────────
+    if (slopePct !== 0) {
+      var deg = Math.round(Math.atan(Math.abs(slopeFrac))*180/Math.PI);
+      var midX = treeX + (xFlat - treeX)*0.45;
+      var midY = baseY + (yFlat - baseY)*0.45;
+      s(txt((slopePct>0?'+':'')+slopePct+'% ('+deg+'deg)',
+        midX, midY + (slopePct<0?12:-8),
+        { fill:'#4a6878','font-size':'7.5' }));
+    }
+
+    // ── Tree height scale bar ────────────────────────────────────
+    // Vertical bracket left of tree: top tick at treeTopY, bottom tick at baseY
+    var sbX  = treeX - 10;   // x of the vertical bar
+    var tkW  = 4;             // tick half-width
+    var col  = '#3a8c6e';
+    // Vertical line
+    s(el('line', { x1:sbX, y1:treeTopY, x2:sbX, y2:baseY,
+      stroke:col, 'stroke-width':'1', opacity:'0.7' }));
+    // Top tick
+    s(el('line', { x1:sbX-tkW, y1:treeTopY, x2:sbX+tkW, y2:treeTopY,
+      stroke:col, 'stroke-width':'1.5', opacity:'0.9' }));
+    // Bottom tick
+    s(el('line', { x1:sbX-tkW, y1:baseY, x2:sbX+tkW, y2:baseY,
+      stroke:col, 'stroke-width':'1.5', opacity:'0.9' }));
+    // Mid-point ticks at 25%, 50%, 75% if tree is tall enough
+    if (treeH > 40) {
+      var quarters = [0.25, 0.5, 0.75];
+      for (var qi = 0; qi < quarters.length; qi++) {
+        var qy = baseY - treeH * quarters[qi];
+        var qw = quarters[qi] === 0.5 ? tkW : tkW * 0.6;
+        s(el('line', { x1:sbX-qw, y1:qy.toFixed(1), x2:sbX+qw, y2:qy.toFixed(1),
+          stroke:col, 'stroke-width':'1', opacity:'0.6' }));
+      }
+    }
+    // Label at midpoint
+    s(txt(h.toFixed(0)+"'", sbX - 5, treeTopY + treeH * 0.5 + 3,
+      { fill:col, 'font-size':'8', 'text-anchor':'end', 'font-weight':'600' }));
+  }
+
+  function drawPerson(svg, el, x, groundY, personH, color) {
+    var headR   = personH * 0.11;
+    var bodyH   = personH * 0.35;
+    var legH    = personH * 0.38;
+    var shouldW = personH * 0.14;
+    var headCY  = groundY - personH + headR;
+    var neckY   = headCY + headR + 1;
+    var hipY    = neckY + bodyH;
+    var footY   = hipY + legH;
+    svg.appendChild(el('line', { x1: x, y1: hipY, x2: x - shouldW * 0.6, y2: footY,
+      stroke: color, 'stroke-width': '1.5', opacity: '0.92' }));
+    svg.appendChild(el('line', { x1: x, y1: hipY, x2: x + shouldW * 0.6, y2: footY,
+      stroke: color, 'stroke-width': '1.5', opacity: '0.92' }));
+    svg.appendChild(el('line', { x1: x, y1: neckY, x2: x, y2: hipY,
+      stroke: color, 'stroke-width': '2', opacity: '0.92' }));
+    svg.appendChild(el('line', { x1: x - shouldW, y1: neckY + bodyH * 0.15,
+      x2: x + shouldW, y2: neckY + bodyH * 0.15,
+      stroke: color, 'stroke-width': '1.5', opacity: '0.92' }));
+    svg.appendChild(el('circle', { cx: x, cy: headCY, r: headR,
+      fill: 'none', stroke: color, 'stroke-width': '1.5', opacity: '0.92' }));
+  }
+
+  function drawHouse(svg, el, xNear, groundY, houseW, color) {
+    // xNear = near edge of house (the measured distance)
+    // house is 25ft wide, ~15ft wall, ~8ft roof rise
+    var wallH  = houseW * 0.60;
+    var roofH  = houseW * 0.32;
+    var xFar   = xNear + houseW;
+    var wallTop = groundY - wallH;
+    var roofPeakX = xNear + houseW * 0.5;
+    var roofPeakY = wallTop - roofH;
+
+    // Wall fill
+    svg.appendChild(el('rect', {
+      x: xNear, y: wallTop, width: houseW, height: wallH,
+      fill: 'rgba(255,58,58,0.08)', stroke: color, 'stroke-width': '1.5', opacity: '0.9'
+    }));
+    // Roof outline (triangle)
+    svg.appendChild(el('polygon', {
+      points: xNear + ',' + wallTop + ' ' + xFar + ',' + wallTop + ' ' +
+              roofPeakX + ',' + roofPeakY,
+      fill: 'rgba(255,58,58,0.12)', stroke: color, 'stroke-width': '1.5', opacity: '0.9'
+    }));
+    // Door (centered, lower third)
+    var doorW  = houseW * 0.16;
+    var doorH  = wallH  * 0.38;
+    var doorX  = roofPeakX - doorW / 2;
+    var doorY  = groundY - doorH;
+    svg.appendChild(el('rect', {
+      x: doorX, y: doorY, width: doorW, height: doorH,
+      fill: 'rgba(255,58,58,0.18)', stroke: color, 'stroke-width': '1', opacity: '0.7'
+    }));
+    // Near-edge tick label
+    svg.appendChild(el('line', { x1: xNear, y1: groundY - 3, x2: xNear, y2: groundY + 3,
+      stroke: color, 'stroke-width': '1.5', opacity: '0.6' }));
+  }
+
+  window.fzTargetType = 'person';
+  window.toggleFzTarget = function() {
+    window.fzTargetType = (window.fzTargetType === 'person') ? 'house' : 'person';
+    updateFzLegendIcon();
+    updateFallZone();
+  };
+
+  function updateFzLegendIcon() {
+    var icon  = document.getElementById('fz-legend-icon');
+    var label = document.getElementById('fz-legend-label');
+    if (window.fzTargetType === 'house') {
+      label.textContent = "House (25')";
+      icon.innerHTML =
+        '<rect x="1" y="7" width="12" height="6" fill="none" stroke="#4a9eff" stroke-width="1.3"/>' +
+        '<polygon points="1,7 13,7 7,2" fill="none" stroke="#4a9eff" stroke-width="1.3"/>';
+    } else {
+      label.textContent = "Person (6')";
+      icon.innerHTML =
+        '<circle cx="7" cy="3" r="1.8" fill="none" stroke="#4a9eff" stroke-width="1.3"/>' +
+        '<line x1="7" y1="5" x2="7" y2="10" stroke="#4a9eff" stroke-width="1.3"/>' +
+        '<line x1="4" y1="7" x2="10" y2="7" stroke="#4a9eff" stroke-width="1.3"/>' +
+        '<line x1="7" y1="10" x2="4.5" y2="14" stroke="#4a9eff" stroke-width="1.3"/>' +
+        '<line x1="7" y1="10" x2="9.5" y2="14" stroke="#4a9eff" stroke-width="1.3"/>';
+    }
+  }
+
+  function drawTree(svg, el, x, groundY, treeH) {
+    if (treeH < 8) treeH = 50;
+    function a(node) { svg.appendChild(node); return node; }
+
+    // Scale factor — workshop tree was 400px tall, centred at x=340, groundY=442
+    var s  = treeH / 400;
+    var cx = x;
+    // Map workshop coords: px(wx, wy) -> screen
+    function px(wx, wy) { return ((wx - 340) * s + cx).toFixed(2); }
+    function py(wy)     { return (groundY - (442 - wy) * s).toFixed(2); }
+    // SVG path string: space-separated "px,py" pairs from workshop coord pairs
+    function pts(pairs) {
+      return pairs.map(function(p){ return px(p[0],p[1])+','+py(p[1]); }).join(' ');
+    }
+    // Build a path d string from workshop [wx,wy] control points using Q curves
+    // For simple rounded triangles we use path with Q bezier tips
+    function tier(d_workshop) {
+      // Replace workshop coords with scaled coords in the path string
+      return d_workshop.replace(/(-?[\d.]+),(-?[\d.]+)/g, function(_, wx, wy) {
+        return px(parseFloat(wx), parseFloat(wy)) + ',' + py(parseFloat(wy));
+      });
+    }
+
+    var fill = '#0d2410';
+
+    // ── Trunk ──────────────────────────────────────────────────────
+    a(el('path', { d: tier(
+      'M336,325 L335,430 Q334,438 331,442 L349,442 Q346,438 345,430 L344,325 Z'
+    ), fill: 'url(#fz-trunk)' }));
+    // bark lines
+    var t1x = px(338,0), t2x = px(341,0), t3x = px(343,0);
+    var tyA = py(340), tyB = py(420), tyC = py(335), tyD = py(425), tyE = py(338);
+    a(el('line', { x1:t1x, y1:tyA, x2:t1x, y2:tyB, stroke:'#2a1608','stroke-width':'0.6',opacity:'0.6' }));
+    a(el('line', { x1:t2x, y1:tyC, x2:t2x, y2:tyD, stroke:'#4a2810','stroke-width':'0.5',opacity:'0.4' }));
+    // knot marks
+    a(el('path', { d:'M'+px(337,365)+','+py(365)+' Q'+px(340,362)+','+py(362)+' '+px(343,365)+','+py(365),
+      fill:'none', stroke:'#1e0f06','stroke-width':'0.8',opacity:'0.7' }));
+    a(el('path', { d:'M'+px(337,390)+','+py(390)+' Q'+px(340,388)+','+py(388)+' '+px(343,390)+','+py(390),
+      fill:'none', stroke:'#1e0f06','stroke-width':'0.8',opacity:'0.6' }));
+    a(el('path', { d:'M'+px(337,413)+','+py(413)+' Q'+px(340,411)+','+py(411)+' '+px(343,413)+','+py(413),
+      fill:'none', stroke:'#1e0f06','stroke-width':'0.7',opacity:'0.5' }));
+
+    // ── Canopy tiers (rounded triangles) ──────────────────────────
+    // tier 1 — spire
+    a(el('path', { d: tier(
+      'M340,42 Q338,58 332,75 Q336,73 340,74 Q344,73 348,75 Q342,58 340,42 Z'
+    ), fill: fill }));
+    // tier 2
+    a(el('path', { d: tier(
+      'M340,68 Q336,79 325,89 Q322,92 321,96 Q330,94 340,95 Q350,94 359,96 Q358,92 355,89 Q344,79 340,68 Z'
+    ), fill: fill }));
+    // tier 3
+    a(el('path', { d: tier(
+      'M340,88 Q334,101 320,113 Q315,119 313,125 Q326,122 340,123 Q354,122 367,125 Q365,119 360,113 Q346,101 340,88 Z'
+    ), fill: fill }));
+    // tier 4
+    a(el('path', { d: tier(
+      'M340,112 Q332,127 315,142 Q308,150 305,158 Q322,155 340,156 Q358,155 375,158 Q372,150 365,142 Q348,127 340,112 Z'
+    ), fill: fill }));
+    // tier 5
+    a(el('path', { d: tier(
+      'M340,140 Q330,158 310,176 Q300,186 296,195 Q317,192 340,193 Q363,192 384,195 Q380,186 370,176 Q350,158 340,140 Z'
+    ), fill: fill }));
+    // tier 6
+    a(el('path', { d: tier(
+      'M340,170 Q328,191 304,212 Q291,224 286,235 Q312,232 340,233 Q368,232 394,235 Q399,224 376,212 Q352,191 340,170 Z'
+    ), fill: fill }));
+    // tier 7
+    a(el('path', { d: tier(
+      'M340,203 Q326,227 298,251 Q281,267 273,280 Q305,277 340,278 Q375,277 407,280 Q415,267 382,251 Q354,227 340,203 Z'
+    ), fill: fill }));
+    // tier 8 — widest
+    a(el('path', { d: tier(
+      'M340,238 Q323,265 289,293 Q267,312 256,327 Q296,324 340,325 Q384,324 424,327 Q433,312 391,293 Q357,265 340,238 Z'
+    ), fill: fill }));
+  }
+
+  // -- Matrix overlay --
   var resultEl = document.getElementById('result');
   var matrixOverlay = document.getElementById('matrix-overlay');
   var resultPressTimer = null;
@@ -644,24 +1564,24 @@
   resultEl.addEventListener('mouseup',    endResultPress);
   resultEl.addEventListener('mouseleave', endResultPress);
 
-  document.getElementById('matrix-close').addEventListener('click', closeMatrix);
-
-  var matrixSwipeY = 0;
-  matrixOverlay.addEventListener('touchstart', function(e) {
-    matrixSwipeY = e.touches[0].clientY;
-  }, { passive: true });
-  matrixOverlay.addEventListener('touchend', function(e) {
-    if (e.changedTouches[0].clientY - matrixSwipeY > 80) closeMatrix();
-  }, { passive: true });
+  window.closeMatrix = function() {
+    matrixOverlay.classList.remove('open');
+  };
 
   function openMatrix() {
     highlightMatrix();
     matrixOverlay.classList.add('open');
   }
 
-  function closeMatrix() {
-    matrixOverlay.classList.remove('open');
-  }
+  document.getElementById('matrix-close').addEventListener('click', window.closeMatrix);
+
+  var matrixSwipeY = 0;
+  matrixOverlay.addEventListener('touchstart', function(e) {
+    matrixSwipeY = e.touches[0].clientY;
+  }, { passive: true });
+  matrixOverlay.addEventListener('touchend', function(e) {
+    if (e.changedTouches[0].clientY - matrixSwipeY > 80) window.closeMatrix();
+  }, { passive: true });
 
   function highlightMatrix() {
     var lof  = state.lof;
@@ -673,7 +1593,7 @@
 
     var anyActive = lof || loit || cof;
 
-    // ── Matrix 1 ──
+    // -- Matrix 1 --
     var m1cells = document.querySelectorAll('#mtx1 [data-m1row], #mtx1 [data-m1col]');
     for (var i = 0; i < m1cells.length; i++) {
       var c = m1cells[i];
@@ -697,7 +1617,7 @@
       }
     }
 
-    // ── Matrix 2 ──
+    // -- Matrix 2 --
     var m2cells = document.querySelectorAll('#mtx2 [data-m2row], #mtx2 [data-m2col]');
     for (var j = 0; j < m2cells.length; j++) {
       var d = m2cells[j];
